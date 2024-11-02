@@ -1,4 +1,6 @@
 import React from "react";
+import { Link } from "react-router-dom";
+
 const Homepage = () => {
   return (
     <div className="homepage">
@@ -7,7 +9,7 @@ const Homepage = () => {
           <div className="left">
             <h1>We take care of your brand</h1>
             <p>We care about our work and we care about our clients.</p>
-            <button className="register">Register </button>
+            <Link to="#contact" className="register">Register</Link>
           </div>
           <div className="right">
             <img src="headimg.png" alt="" />

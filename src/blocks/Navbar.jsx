@@ -21,36 +21,31 @@ const Navbar = () => {
           <div className="links">
             <Link
               to="/#client"
-              className=""
-              onClick={() => Scrolltosection("client")}
+              onClick={() => { Scrolltosection("client"); setActiveNav(false); }}
             >
               client
             </Link>
             <Link
               to="/#service"
-              className=""
-              onClick={() => Scrolltosection("service")}
+              onClick={() => { Scrolltosection("service"); setActiveNav(false); }}
             >
               Service
             </Link>
             <Link
               to="/#work"
-              className=""
-              onClick={() => Scrolltosection("work")}
+              onClick={() => { Scrolltosection("work"); setActiveNav(false); }}
             >
               work
             </Link>
             <Link
               to="/#team"
-              className=""
-              onClick={() => Scrolltosection("team")}
+              onClick={() => { Scrolltosection("team"); setActiveNav(false); }}
             >
               team
             </Link>
             <Link
               to="/#contactUs"
-              className=""
-              onClick={() => Scrolltosection("contact")}
+              onClick={() => { Scrolltosection("contact"); setActiveNav(false); }}
             >
               contact us
             </Link>

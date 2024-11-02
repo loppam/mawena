@@ -58,6 +58,7 @@ body {
   padding: 15px 25px;
   text-transform: uppercase;
   cursor: pointer;
+  text-decoration: none;
 }
 .register:hover {
   background-color: rgba(93, 52, 255, 0.81);
