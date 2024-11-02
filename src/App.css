@@ -577,6 +577,8 @@ ul.brands li.brand-logo {
 .trans {
   display: flex;
   align-items: center;
+  color: #1d1d1f;
+  text-decoration: none;
 }
 .trans img {
   width: 25px;
