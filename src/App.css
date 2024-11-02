@@ -444,6 +444,9 @@ ul.brands li.brand-logo {
 .card-photo.silas {
   background-image: url("/public/silas.jpg") !important;
 }
+.card-photo.trend {
+  background-image: url("/public/trend.jpg") !important;
+}
 
 .card-title {
   text-align: center;
