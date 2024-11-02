@@ -7,7 +7,9 @@ const Navbar = () => {
   return (
     <div className={activeNav ? "closee navbar" : "menu navbar"}>
       <div className="flexx">
-        <div className={activeNav ? "close trans" : "menu trans"}>MAWENA</div>
+        <div className={activeNav ? "close trans" : "menu trans"}>
+          <img src="/logo.png" alt="" />
+          AWENA</div>
         {activeNav ? (
           <button onClick={() => setActiveNav(false)}>Close</button>
         ) : (

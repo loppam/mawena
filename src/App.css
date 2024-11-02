@@ -573,6 +573,13 @@ ul.brands li.brand-logo {
 .cr {
   font-size: 12px;
 }
+.trans {
+  display: flex;
+  align-items: center;
+}
+.trans img {
+  width: 25px;
+}
 .false {
   display: none;
 }
