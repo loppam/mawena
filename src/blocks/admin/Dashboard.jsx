@@ -149,10 +149,12 @@ const Dashboard = () => {
   const handleLogin = (e) => {
     e.preventDefault();
     if (
-      credentials.username === import.meta.env.VITE_ADMIN_USERNAME &&
+      credentials.username.toLowerCase() ===
+        import.meta.env.VITE_ADMIN_USERNAME.toLowerCase() &&
       credentials.password === import.meta.env.VITE_ADMIN_PASSWORD
     ) {
       setIsAuthenticated(true);
+      setError("");
     } else {
       setError("Invalid credentials");
     }
@@ -184,7 +186,7 @@ const Dashboard = () => {
             <input
               id="password"
               type="password"
-              value={credentials.password}
+              value={credentials.password.toLowerCase()}
               onChange={(e) =>
                 setCredentials({ ...credentials, password: e.target.value })
               }
