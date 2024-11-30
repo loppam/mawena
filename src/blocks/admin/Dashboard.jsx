@@ -31,6 +31,7 @@ const Dashboard = () => {
     name: "",
     ticketAllocation: 0,
   });
+  const [copyMessage, setCopyMessage] = useState("");
 
   useEffect(() => {
     fetchEvents();
@@ -92,7 +93,7 @@ const Dashboard = () => {
       const newTotalAllocated =
         (selectedEvent.totalAllocated || 0) + newInfluencer.ticketAllocation;
       if (newTotalAllocated > selectedEvent.totalTickets) {
-        alert(
+        setError(
           `Cannot allocate more than total tickets (${
             selectedEvent.totalTickets
           }). Current total allocated: ${selectedEvent.totalAllocated || 0}`
@@ -103,7 +104,7 @@ const Dashboard = () => {
       const eventRef = doc(db, "events", selectedEvent.id);
       const influencerData = {
         ...newInfluencer,
-        registrationLink: `${window.location.origin}/register/${
+        registrationLink: `https://hmawena.vercel.app/register/${
           selectedEvent.id
         }/${Date.now()}`,
         ticketsRemaining: newInfluencer.ticketAllocation,
@@ -142,7 +143,7 @@ const Dashboard = () => {
       alert("Influencer added successfully!");
     } catch (error) {
       console.error("Error:", error);
-      alert("Error adding influencer");
+      setError("Error adding influencer");
     }
   };
 
@@ -158,6 +159,15 @@ const Dashboard = () => {
     } else {
       setError("Invalid credentials");
     }
+  };
+
+  // Function to handle copy with timeout
+  const handleCopyLink = (link) => {
+    navigator.clipboard.writeText(link);
+    setCopyMessage("Link copied!");
+    setTimeout(() => {
+      setCopyMessage("");
+    }, 2000); // Message will disappear after 2 seconds
   };
 
   if (!isAuthenticated) {
@@ -406,13 +416,13 @@ const Dashboard = () => {
                       </td>
                       <td>
                         <button
-                          onClick={() => {
-                            navigator.clipboard.writeText(inf.registrationLink);
-                            alert("Link copied!");
-                          }}
+                          onClick={() => handleCopyLink(inf.registrationLink)}
                         >
                           Copy Link
                         </button>
+                        {copyMessage && (
+                          <span className="copy-message">{copyMessage}</span>
+                        )}
                       </td>
                     </tr>
                   ))}
