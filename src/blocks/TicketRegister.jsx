@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { db } from "../firebase/config";
-import { doc, getDoc, updateDoc, addDoc, collection } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  addDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import { QRCodeSVG } from "qrcode.react";
 
 const TicketRegister = () => {
@@ -16,6 +25,8 @@ const TicketRegister = () => {
     email: "",
     phone: "",
   });
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   useEffect(() => {
     const fetchEventAndInfluencerDetails = async () => {
@@ -27,8 +38,8 @@ const TicketRegister = () => {
           const eventData = eventSnap.data();
           setEventDetails(eventData);
 
-          const influencer = eventData.influencers.find(
-            (inf) => inf.registrationLink.includes(influencerTimestamp)
+          const influencer = eventData.influencers.find((inf) =>
+            inf.registrationLink.includes(influencerTimestamp)
           );
 
           if (influencer) {
@@ -51,15 +62,47 @@ const TicketRegister = () => {
   }, [eventId, influencerTimestamp]);
 
   const generateTicketId = () => {
-    return `${eventDetails.name.substring(0, 3).toUpperCase()}-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
+    return `${eventDetails.name
+      .substring(0, 3)
+      .toUpperCase()}-${Date.now().toString(36)}-${Math.random()
+      .toString(36)
+      .substring(2, 5)
+      .toUpperCase()}`;
+  };
+
+  const checkExistingRegistration = async (email) => {
+    try {
+      const ticketsRef = collection(db, "tickets");
+      const q = query(
+        ticketsRef,
+        where("email", "==", email),
+        where("eventId", "==", eventId)
+      );
+
+      const querySnapshot = await getDocs(q);
+      return !querySnapshot.empty;
+    } catch (error) {
+      console.error("Error checking registration:", error);
+      return false;
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(""); // Clear any existing errors
+    setSuccess(""); // Clear any existing success messages
 
     try {
+      // Check if email is already registered
+      const isRegistered = await checkExistingRegistration(formData.email);
+
+      if (isRegistered) {
+        setError("This email has already been registered for this event!");
+        return;
+      }
+
       if (influencerDetails.ticketsRemaining <= 0) {
-        alert("Sorry, all tickets have been claimed!");
+        setError("Sorry, all tickets have been claimed!");
         return;
       }
 
@@ -92,7 +135,8 @@ const TicketRegister = () => {
 
       await updateDoc(eventRef, { influencers: updatedInfluencers });
 
-      // Set ticket data for QR code display
+      // Set success message and show ticket
+      setSuccess("Registration successful!");
       setTicketData(ticket);
       setShowTicket(true);
 
@@ -100,7 +144,7 @@ const TicketRegister = () => {
       setFormData({ name: "", email: "", phone: "" });
     } catch (error) {
       console.error("Error:", error);
-      alert("Registration failed. Please try again.");
+      setError("Registration failed. Please try again.");
     }
   };
 
@@ -119,12 +163,22 @@ const TicketRegister = () => {
       <div className="ticket-display">
         <h2>Your Ticket</h2>
         <div className="ticket-details">
-          <p><strong>Name:</strong> {ticket.name}</p>
-          <p><strong>Event:</strong> {ticket.eventName}</p>
-          <p><strong>Date:</strong> {new Date(ticket.eventDate).toLocaleDateString()}</p>
-          <p><strong>Location:</strong> {ticket.eventLocation}</p>
-          <p><strong>Description:</strong> {ticket.eventDescription}</p>
-          <p><strong>Ticket ID:</strong> {ticket.ticketId}</p>
+          <p>
+            <strong>Name:</strong> {ticket.name}
+          </p>
+          <p>
+            <strong>Event:</strong> {ticket.eventName}
+          </p>
+          <p>
+            <strong>Date:</strong>{" "}
+            {new Date(ticket.eventDate).toLocaleDateString()}
+          </p>
+          <p>
+            <strong>Location:</strong> {ticket.eventLocation}
+          </p>
+          <p>
+            <strong>Description:</strong> {ticket.eventDescription}
+          </p>
         </div>
         <div className="qr-code">
           <QRCodeSVG
@@ -157,31 +211,37 @@ const TicketRegister = () => {
     <div className="ticket-register">
       <div className="content">
         <h1>{eventDetails.name}</h1>
+        {error && <p className="error-message">{error}</p>}
+        {success && <p className="success-message">{success}</p>}
         <p>Event Date: {new Date(eventDetails.date).toLocaleDateString()}</p>
         <p>Location: {eventDetails.location}</p>
         <p>Description: {eventDetails.description}</p>
         <p>Tickets Remaining: {influencerDetails.ticketsRemaining}</p>
-        
+
         <form onSubmit={handleSubmit}>
           <input
             type="text"
             placeholder="Full Name"
             value={formData.name}
-            onChange={(e) => setFormData({...formData, name: e.target.value})}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
           />
           <input
             type="email"
             placeholder="Email"
             value={formData.email}
-            onChange={(e) => setFormData({...formData, email: e.target.value})}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
             required
           />
           <input
             type="tel"
             placeholder="Phone Number"
             value={formData.phone}
-            onChange={(e) => setFormData({...formData, phone: e.target.value})}
+            onChange={(e) =>
+              setFormData({ ...formData, phone: e.target.value })
+            }
             required
           />
           <button type="submit">Register for Event</button>
