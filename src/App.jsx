@@ -6,28 +6,42 @@ import Team from "./blocks/Team";
 import WhatWeDo from "./blocks/WhatWeDo";
 import WhatWeveDone from "./blocks/WhatWeveDone";
 import Contact from "./blocks/Contact";
+import Dashboard from './blocks/admin/Dashboard';
+import { Routes, Route } from 'react-router-dom';
+import TicketRegister from './blocks/TicketRegister';
+import TicketScanner from './blocks/admin/TicketScanner';
+
 function App() {
   return (
     <>
       <Navbar />
-      <section id="homepage">
-        <Homepage />
-      </section>
-      <section id="client">
-        <Clientele />
-      </section>
-      <section id="service">
-        <WhatWeDo />
-      </section>
-      <section id="work">
-        <WhatWeveDone />
-      </section>
-      <section id="team">
-        <Team />
-      </section>
-      <section id="contact">
-        <Contact />
-      </section>
+      <Routes>
+        <Route path="/admin" element={<Dashboard />} />
+        <Route path="/scanner" element={<TicketScanner />} />
+        <Route path="/register/:eventId/:influencerTimestamp" element={<TicketRegister />} />
+        <Route path="/" element={
+          <>
+            <section id="homepage">
+              <Homepage />
+            </section>
+            <section id="client">
+              <Clientele />
+            </section>
+            <section id="service">
+              <WhatWeDo />
+            </section>
+            <section id="work">
+              <WhatWeveDone />
+            </section>
+            <section id="team">
+              <Team />
+            </section>
+            <section id="contact">
+              <Contact />
+            </section>
+          </>
+        } />
+      </Routes>
     </>
   );
 }
