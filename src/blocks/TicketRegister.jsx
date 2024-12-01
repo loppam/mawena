@@ -158,6 +158,12 @@ const TicketRegister = () => {
 
     const downloadTicket = async () => {
       try {
+        // Hide the button immediately before capturing
+        setShowDownloadButton(false);
+        
+        // Wait a tiny bit for the button to disappear from DOM
+        await new Promise(resolve => setTimeout(resolve, 100));
+
         const ticketElement = document.querySelector(".ticket-display");
         const scale = window.innerWidth <= 768 ? 1 : 2;
 
@@ -195,6 +201,8 @@ const TicketRegister = () => {
         setShowDownloadButton(false);
       } catch (error) {
         console.error("Error generating PDF:", error);
+        // Show the button again if there's an error
+        setShowDownloadButton(true);
       }
     };
 
