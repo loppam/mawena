@@ -7,14 +7,17 @@ import WhatWeDo from "./blocks/WhatWeDo";
 import WhatWeveDone from "./blocks/WhatWeveDone";
 import Contact from "./blocks/Contact";
 import Dashboard from './blocks/admin/Dashboard';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import TicketRegister from './blocks/TicketRegister';
 import TicketScanner from './blocks/admin/TicketScanner';
 
 function App() {
+  const location = useLocation();
+  const showNavbar = !location.pathname.includes('/register/');
+
   return (
     <>
-      <Navbar />
+      {showNavbar && <Navbar />}
       <Routes>
         <Route path="/admin" element={<Dashboard />} />
         <Route path="/scanner" element={<TicketScanner />} />

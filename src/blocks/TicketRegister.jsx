@@ -12,9 +12,8 @@ import {
   getDocs,
 } from "firebase/firestore";
 import { QRCodeSVG } from "qrcode.react";
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
-
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 const TicketRegister = () => {
   const { eventId, influencerTimestamp } = useParams();
@@ -145,6 +144,8 @@ const TicketRegister = () => {
   };
 
   const TicketDisplay = ({ ticket }) => {
+    const [showDownloadButton, setShowDownloadButton] = useState(true);
+    
     const ticketInfo = JSON.stringify({
       ticketId: ticket.ticketId,
       name: ticket.name,
@@ -157,11 +158,9 @@ const TicketRegister = () => {
 
     const downloadTicket = async () => {
       try {
-        const ticketElement = document.querySelector('.ticket-display');
-        
-        // Adjust scale based on device width
+        const ticketElement = document.querySelector(".ticket-display");
         const scale = window.innerWidth <= 768 ? 1 : 2;
-        
+
         const canvas = await html2canvas(ticketElement, {
           scale: scale,
           logging: false,
@@ -170,76 +169,60 @@ const TicketRegister = () => {
           windowHeight: ticketElement.scrollHeight,
           height: ticketElement.scrollHeight,
           width: ticketElement.scrollWidth,
-          backgroundColor: '#ffffff'
+          backgroundColor: "#ffffff",
         });
-        
-        const imgData = canvas.toDataURL('image/png');
+
+        const imgData = canvas.toDataURL("image/png");
         const pdf = new jsPDF({
-          orientation: 'portrait',
-          unit: 'mm',
-          format: 'a4'
+          orientation: "portrait",
+          unit: "mm",
+          format: "a4",
         });
-        
-        // Calculate dimensions to fit content properly
+
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = pdf.internal.pageSize.getHeight();
         const imgWidth = canvas.width;
         const imgHeight = canvas.height;
         const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-        
-        // Center the image on the PDF
+
         const xOffset = (pdfWidth - imgWidth * ratio) / 2;
         const yOffset = (pdfHeight - imgHeight * ratio) / 2;
-        
-        pdf.addImage(imgData, 'PNG', xOffset, yOffset, imgWidth * ratio, imgHeight * ratio);
+
+        pdf.addImage(imgData, "PNG", xOffset, yOffset, imgWidth * ratio, imgHeight * ratio);
         pdf.save(`${ticket.eventName}-${ticket.ticketId}.pdf`);
+        
+        // Hide the button after successful download
+        setShowDownloadButton(false);
       } catch (error) {
         console.error("Error generating PDF:", error);
       }
     };
 
     return (
-      <div className="ticket-display" style={{ 
-        width: '100%',
-        maxWidth: '600px',
-        margin: '0 auto',
-        padding: '20px',
-        boxSizing: 'border-box'
+      <div className="ticket-display" style={{
+        width: "100%",
+        maxWidth: "600px",
+        margin: "0 auto",
+        padding: "20px",
+        boxSizing: "border-box",
       }}>
         <h2>Your Ticket</h2>
-        <img src="/bltp-logo.png" alt="Ticket Logo" className="ticket-logo" />
         <div className="ticket-details">
-          <p>
-            <strong>Name:</strong> {ticket.name}
-          </p>
-          <p>
-            <strong>Event:</strong> {ticket.eventName}
-          </p>
-          <p>
-            <strong>Date:</strong>{" "}
-            {new Date(ticket.eventDate).toLocaleDateString()}
-          </p>
-          <p>
-            <strong>Location:</strong> {ticket.eventLocation}
-          </p>
-          <p>
-            <strong>Description:</strong> {ticket.eventDescription}
-          </p>
-          <p>
-            <strong>Ticket ID:</strong> {ticket.ticketId}
-          </p>
+          <p><strong>Name:</strong> {ticket.name}</p>
+          <p><strong>Event:</strong> {ticket.eventName}</p>
+          <p><strong>Date:</strong> {new Date(ticket.eventDate).toLocaleDateString()}</p>
+          <p><strong>Location:</strong> {ticket.eventLocation}</p>
+          <p><strong>Description:</strong> {ticket.eventDescription}</p>
+          <p><strong>Ticket ID:</strong> {ticket.ticketId}</p>
         </div>
         <div className="qr-code">
-          <QRCodeSVG
-            value={ticketInfo}
-            size={256}
-            level="H"
-            includeMargin={true}
-          />
+          <QRCodeSVG value={ticketInfo} size={256} level="H" includeMargin={true} />
         </div>
-        <button onClick={downloadTicket} className="print-button">
-          Download Ticket
-        </button>
+        {showDownloadButton && (
+          <button onClick={downloadTicket} className="print-button">
+            Download Ticket
+          </button>
+        )}
       </div>
     );
   };
