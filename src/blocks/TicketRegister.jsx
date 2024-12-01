@@ -158,10 +158,19 @@ const TicketRegister = () => {
     const downloadTicket = async () => {
       try {
         const ticketElement = document.querySelector('.ticket-display');
+        
+        // Adjust scale based on device width
+        const scale = window.innerWidth <= 768 ? 1 : 2;
+        
         const canvas = await html2canvas(ticketElement, {
-          scale: 2,
+          scale: scale,
           logging: false,
-          useCORS: true
+          useCORS: true,
+          windowWidth: ticketElement.scrollWidth,
+          windowHeight: ticketElement.scrollHeight,
+          height: ticketElement.scrollHeight,
+          width: ticketElement.scrollWidth,
+          backgroundColor: '#ffffff'
         });
         
         const imgData = canvas.toDataURL('image/png');
@@ -171,11 +180,18 @@ const TicketRegister = () => {
           format: 'a4'
         });
         
-        const imgProps = pdf.getImageProperties(imgData);
+        // Calculate dimensions to fit content properly
         const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+        const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
         
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        // Center the image on the PDF
+        const xOffset = (pdfWidth - imgWidth * ratio) / 2;
+        const yOffset = (pdfHeight - imgHeight * ratio) / 2;
+        
+        pdf.addImage(imgData, 'PNG', xOffset, yOffset, imgWidth * ratio, imgHeight * ratio);
         pdf.save(`${ticket.eventName}-${ticket.ticketId}.pdf`);
       } catch (error) {
         console.error("Error generating PDF:", error);
@@ -183,7 +199,13 @@ const TicketRegister = () => {
     };
 
     return (
-      <div className="ticket-display">
+      <div className="ticket-display" style={{ 
+        width: '100%',
+        maxWidth: '600px',
+        margin: '0 auto',
+        padding: '20px',
+        boxSizing: 'border-box'
+      }}>
         <h2>Your Ticket</h2>
         <img src="/bltp-logo.png" alt="Ticket Logo" className="ticket-logo" />
         <div className="ticket-details">
