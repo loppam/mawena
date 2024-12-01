@@ -3,21 +3,20 @@ import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from "html5-qrcode";
 import { db } from "../../firebase/config";
 import {
   doc,
-  getDoc,
-  updateDoc,
   collection,
   query,
   where,
   getDocs,
+  updateDoc,
 } from "firebase/firestore";
 
 const TicketScanner = () => {
   const [ticketInfo, setTicketInfo] = useState(null);
   const [error, setError] = useState(null);
   const [scanning, setScanning] = useState(true);
-  const [scannerStatus, setScannerStatus] = useState(
-    "Place a QR code in front of the camera"
-  );
+  const [scannerStatus, setScannerStatus] = useState("Place a QR code in front of the camera");
+  const [manualTicketId, setManualTicketId] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     const scanner = new Html5QrcodeScanner("reader", {
@@ -53,56 +52,70 @@ const TicketScanner = () => {
         const ticketData = JSON.parse(result?.text);
         setScanning(false);
 
-        // Query the ticket from Firestore
-        const ticketsRef = collection(db, "tickets");
-        const q = query(
-          ticketsRef,
-          where("ticketId", "==", ticketData.ticketId)
-        );
-        const querySnapshot = await getDocs(q);
-
-        if (querySnapshot.empty) {
-          setError("Invalid ticket - not found in database");
-          return;
-        }
-
-        const ticketDoc = querySnapshot.docs[0];
-        const ticket = ticketDoc.data();
-
-        if (ticket.checkedIn) {
-          setError("Ticket already checked in!");
-          setTicketInfo(ticket);
-          return;
-        }
-
-        // Verify event date
-        const eventDate = new Date(ticket.eventDate);
-        const today = new Date();
-        if (eventDate.toDateString() !== today.toDateString()) {
-          setError(
-            "Invalid date - event is scheduled for " +
-              eventDate.toLocaleDateString()
-          );
-          return;
-        }
-
-        // Update ticket status
-        await updateDoc(doc(db, "tickets", ticketDoc.id), {
-          checkedIn: true,
-          checkInTime: new Date().toISOString(),
-        });
-
-        setTicketInfo({
-          ...ticket,
-          checkedIn: true,
-          checkInTime: new Date().toISOString(),
-        });
-        setError(null);
+        await processTicket(ticketData.ticketId);
       } catch (error) {
         console.error("Error processing ticket:", error);
         setError("Invalid QR code format");
       }
     }
+  };
+
+  const handleManualSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setTicketInfo(null);
+    setIsProcessing(true);
+
+    try {
+      await processTicket(`BLTP-${manualTicketId}`);
+      setManualTicketId("");
+    } catch (err) {
+      setError("Error processing ticket: " + err.message);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const processTicket = async (ticketId) => {
+    const ticketsRef = collection(db, "tickets");
+    const q = query(ticketsRef, where("ticketId", "==", ticketId));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      setError("Invalid ticket - not found in database");
+      return;
+    }
+
+    const ticketDoc = querySnapshot.docs[0];
+    const ticket = ticketDoc.data();
+
+    if (ticket.checkedIn) {
+      setError("Ticket already checked in!");
+      setTicketInfo(ticket);
+      return;
+    }
+
+    const eventDate = new Date(ticket.eventDate);
+    const today = new Date();
+    if (eventDate.toDateString() !== today.toDateString()) {
+      setError(
+        "Invalid date - event is scheduled for " +
+          eventDate.toLocaleDateString()
+      );
+      return;
+    }
+
+    await updateDoc(doc(db, "tickets", ticketDoc.id), {
+      checkedIn: true,
+      checkInTime: new Date().toISOString(),
+    });
+
+    setTicketInfo({
+      ...ticket,
+      checkedIn: true,
+      checkInTime: new Date().toISOString(),
+    });
+    setError(null);
   };
 
   const handleError = (error) => {
@@ -119,7 +132,26 @@ const TicketScanner = () => {
 
   return (
     <div className="ticket-scanner">
-      <h1>Ticket Scanner</h1>
+      <h1>Ticket Check-in</h1>
+
+      <div className="manual-input">
+        <form onSubmit={handleManualSubmit}>
+          <input
+            type="text"
+            value={`BLTP-${manualTicketId}`}
+            onChange={(e) => {
+              const value = e.target.value.replace('BLTP-', '').toUpperCase();
+              setManualTicketId(value);
+            }}
+            placeholder="BLTP-XXXX"
+            required
+            disabled={isProcessing}
+          />
+          <button type="submit" disabled={isProcessing || !manualTicketId}>
+            {isProcessing ? "Processing..." : "Check In"}
+          </button>
+        </form>
+      </div>
 
       <div className={`scanner-container ${!scanning ? "hidden" : ""}`}>
         <div className="scanner-instructions">
@@ -134,33 +166,27 @@ const TicketScanner = () => {
         <div id="reader"></div>
       </div>
 
+      {error && (
+        <div className="error-message">
+          <p>{error}</p>
+        </div>
+      )}
+
       {ticketInfo && (
         <div className="ticket-info">
           <h2>Ticket Information</h2>
-          <div className={`status ${error ? "error" : "success"}`}>
-            {error ? (
-              <p className="error-message">{error}</p>
-            ) : (
-              <p className="success-message">✓ Successfully checked in!</p>
-            )}
-          </div>
-          <div className="details">
-            <p>
-              <strong>Name:</strong> {ticketInfo.name}
-            </p>
-            <p>
-              <strong>Event:</strong> {ticketInfo.eventName}
-            </p>
-            <p>
-              <strong>Ticket ID:</strong> {ticketInfo.ticketId}
-            </p>
-            <p>
-              <strong>Check-in Time:</strong>{" "}
-              {ticketInfo.checkInTime
-                ? new Date(ticketInfo.checkInTime).toLocaleTimeString()
-                : "Not checked in"}
-            </p>
-          </div>
+          <p><strong>Name:</strong> {ticketInfo.name}</p>
+          <p><strong>Event:</strong> {ticketInfo.eventName}</p>
+          <p><strong>Ticket ID:</strong> {ticketInfo.ticketId}</p>
+          <p>
+            <strong>Status: </strong>
+            <span className={`status-badge ${ticketInfo.checkedIn ? "status-checked-in" : "status-not-checked-in"}`}>
+              {ticketInfo.checkedIn ? "Checked In" : "Not Checked In"}
+            </span>
+          </p>
+          {ticketInfo.checkedIn && ticketInfo.checkInTime && (
+            <p><strong>Check-in Time:</strong> {new Date(ticketInfo.checkInTime).toLocaleTimeString()}</p>
+          )}
           <button onClick={resetScanner} className="reset-button">
             Scan Next Ticket
           </button>

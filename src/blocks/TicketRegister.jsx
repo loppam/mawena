@@ -12,6 +12,9 @@ import {
   getDocs,
 } from "firebase/firestore";
 import { QRCodeSVG } from "qrcode.react";
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+
 
 const TicketRegister = () => {
   const { eventId, influencerTimestamp } = useParams();
@@ -62,12 +65,8 @@ const TicketRegister = () => {
   }, [eventId, influencerTimestamp]);
 
   const generateTicketId = () => {
-    return `${eventDetails.name
-      .substring(0, 3)
-      .toUpperCase()}-${Date.now().toString(36)}-${Math.random()
-      .toString(36)
-      .substring(2, 5)
-      .toUpperCase()}`;
+    const randomStr = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `BLTP-${randomStr}`;
   };
 
   const checkExistingRegistration = async (email) => {
@@ -89,11 +88,10 @@ const TicketRegister = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(""); // Clear any existing errors
-    setSuccess(""); // Clear any existing success messages
+    setError("");
+    setSuccess("");
 
     try {
-      // Check if email is already registered
       const isRegistered = await checkExistingRegistration(formData.email);
 
       if (isRegistered) {
@@ -120,8 +118,6 @@ const TicketRegister = () => {
         registeredAt: new Date().toISOString(),
         checkedIn: false,
       };
-
-      // Create ticket document
       await addDoc(collection(db, "tickets"), ticket);
 
       // Update remaining tickets for influencer
@@ -159,9 +155,37 @@ const TicketRegister = () => {
       checkedIn: ticket.checkedIn,
     });
 
+    const downloadTicket = async () => {
+      try {
+        const ticketElement = document.querySelector('.ticket-display');
+        const canvas = await html2canvas(ticketElement, {
+          scale: 2,
+          logging: false,
+          useCORS: true
+        });
+        
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4'
+        });
+        
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save(`${ticket.eventName}-${ticket.ticketId}.pdf`);
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+      }
+    };
+
     return (
       <div className="ticket-display">
         <h2>Your Ticket</h2>
+        
         <div className="ticket-details">
           <p>
             <strong>Name:</strong> {ticket.name}
@@ -179,6 +203,9 @@ const TicketRegister = () => {
           <p>
             <strong>Description:</strong> {ticket.eventDescription}
           </p>
+          <p>
+            <strong>Ticket ID:</strong> {ticket.ticketId}
+          </p>
         </div>
         <div className="qr-code">
           <QRCodeSVG
@@ -188,8 +215,8 @@ const TicketRegister = () => {
             includeMargin={true}
           />
         </div>
-        <button onClick={() => window.print()} className="print-button">
-          Print Ticket
+        <button onClick={downloadTicket} className="print-button">
+          Download Ticket
         </button>
       </div>
     );
