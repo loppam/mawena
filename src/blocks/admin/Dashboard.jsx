@@ -104,7 +104,7 @@ const Dashboard = () => {
       const eventRef = doc(db, "events", selectedEvent.id);
       const influencerData = {
         ...newInfluencer,
-        registrationLink: `https://hmawena.vercel.app/register/${
+        registrationLink: `https://mawena.vercel.app/register/${
           selectedEvent.id
         }/${Date.now()}`,
         ticketsRemaining: newInfluencer.ticketAllocation,
