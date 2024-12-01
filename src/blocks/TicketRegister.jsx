@@ -178,14 +178,14 @@ const TicketRegister = () => {
         pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
         pdf.save(`${ticket.eventName}-${ticket.ticketId}.pdf`);
       } catch (error) {
-        console.error('Error generating PDF:', error);
+        console.error("Error generating PDF:", error);
       }
     };
 
     return (
       <div className="ticket-display">
         <h2>Your Ticket</h2>
-        
+        <img src="/bltp-logo.png" alt="Ticket Logo" className="ticket-logo" />
         <div className="ticket-details">
           <p>
             <strong>Name:</strong> {ticket.name}
