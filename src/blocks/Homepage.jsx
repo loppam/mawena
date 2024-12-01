@@ -9,7 +9,7 @@ const Homepage = () => {
           <div className="left">
             <h1>We take care of your brand</h1>
             <p>We care about our work and we care about our clients.</p>
-            <Link to="/admin" className="register">Register</Link>
+            <Link to="/#contact" className="register">Register</Link>
           </div>
           <div className="right">
             <img src="headimg.png" alt="" />
