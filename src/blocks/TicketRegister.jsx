@@ -256,7 +256,7 @@ const TicketRegister = () => {
         <p>Event Date: {new Date(eventDetails.date).toLocaleDateString()}</p>
         <p>Location: {eventDetails.location}</p>
         <p>Description: {eventDetails.description}</p>
-        <p>Tickets Remaining: {influencerDetails.ticketsRemaining}</p>
+{/*         //<p>Tickets Remaining: {influencerDetails.ticketsRemaining}</p> */}
 
         <form onSubmit={handleSubmit}>
           <input
