@@ -45,13 +45,17 @@ const WhatWeveDone = () => {
                   <p>click me</p>
                 </div>
               </a>
-              <li className="vcard">
+              <a
+                href="https://www.instagram.com/the_nysccamprave/"
+                target="_BLANK"
+                className="vcard"
+              >
                 <div className="vcontentt">
                   <FaMusic size={30} />
                   <h2>NYSC</h2>
                   <p>click me</p>
                 </div>
-              </li>
+              </a>
               <a
                 href="https://www.instagram.com/mawena_resources/"
                 target="_BLANK"

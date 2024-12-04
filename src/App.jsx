@@ -10,6 +10,7 @@ import Dashboard from './blocks/admin/Dashboard';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import TicketRegister from './blocks/TicketRegister';
 import TicketScanner from './blocks/admin/TicketScanner';
+import TicketList from './blocks/admin/TicketList';
 
 function App() {
   const location = useLocation();
@@ -21,6 +22,7 @@ function App() {
       <Routes>
         <Route path="/admin" element={<Dashboard />} />
         <Route path="/scanner" element={<TicketScanner />} />
+        <Route path="/tickets" element={<TicketList />} />
         <Route path="/register/:eventId/:influencerTimestamp" element={<TicketRegister />} />
         <Route path="/" element={
           <>

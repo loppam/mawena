@@ -1336,3 +1336,47 @@ table button:hover {
     padding: 0;
   }
 }
+
+.ticket-list {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  color: #1d1d1f;
+}
+
+.ticket-list h1 {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.search-bar {
+  margin-bottom: 2rem;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: 2px solid #ddd;
+  border-radius: 5px;
+  outline: none;
+}
+
+.search-bar input:focus {
+  border-color: #007bff;
+}
+
+.ticket-stats {
+  margin-top: 2rem;
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 5px;
+}
+
+.ticket-stats p {
+  margin: 0;
+  font-weight: 500;
+}
