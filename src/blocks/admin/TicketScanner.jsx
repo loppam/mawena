@@ -95,16 +95,6 @@ const TicketScanner = () => {
       return;
     }
 
-    const eventDate = new Date(ticket.eventDate);
-    const today = new Date();
-    if (eventDate.toDateString() !== today.toDateString()) {
-      setError(
-        "Invalid date - event is scheduled for " +
-          eventDate.toLocaleDateString()
-      );
-      return;
-    }
-
     await updateDoc(doc(db, "tickets", ticketDoc.id), {
       checkedIn: true,
       checkInTime: new Date().toISOString(),
